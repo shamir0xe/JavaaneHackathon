@@ -2,10 +2,11 @@ from __future__ import annotations
 import sys
 import pandas as pd
 import tensorflow as tf
+import numpy as np
 from src.helpers.data_helper import DataHelper
 from src.models.model0 import Model0
 from src.models.model1 import Model1
-import numpy as np
+from src.builders.feature_builder import FeatureBuilder
 
 class AmlakDelegator:
     def __init__(self) -> None:
@@ -68,22 +69,13 @@ class AmlakDelegator:
         return self
 
     def append_features(self) -> AmlakDelegator:
-        features = ['rent_before']
-        for feature in features:
-            getattr(AmlakDelegator, f"feature_{feature}")(self)
+        builder = FeatureBuilder(
+            data_train=self.data_train, 
+            data_validation=self.data_validation
+        ).apply_features()
+        self.data_train = builder.get_train_data()
+        self.data_validation = builder.get_validation_data()
         return self
-    
-    def feature_district(self) -> None:
-        print('in district feature')
-
-    def feature_duplicate_picture(self) -> None:
-        print('in duplicate feature')
-
-    def feature_incorrect_address(self) -> None:
-        print('in incorrect address feature')
-
-    def feature_rent_before(self) -> None:
-        print('in rent before feature')
 
     def output(self) -> None:
         # for index, row in self.data.iterrows():

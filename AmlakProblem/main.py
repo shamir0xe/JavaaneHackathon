@@ -5,10 +5,11 @@ def main():
     .read_data() \
     .trim_data() \
     .select_columns() \
+    .append_features() \
     .normalize_data() \
     .ml_procedure() \
     .output()
-    # .append_features() \
+
 
 if __name__ == '__main__':
     main()
