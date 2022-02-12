@@ -1,2 +1,5 @@
 *.parquet
+*.pyc
+*.csv
+
 
