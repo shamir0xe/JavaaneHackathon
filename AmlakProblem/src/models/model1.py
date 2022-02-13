@@ -8,9 +8,15 @@ import os
 
 
 class Model1():
+    EPOCHS = 20
+    BATCH_SIZE = 32
+
     def __init__(self, data: pd.DataFrame, labels: pd.DataFrame) -> None:
         self.data = data
         self.labels = labels
+        # print('HAHAHAHAHAHAHAHAHAHA')
+        # print(len(self.data))
+        # print(len(self.labels))
         self.config()
         
     def config(self) -> Model1:
@@ -23,18 +29,18 @@ class Model1():
         return self
 
     def data_preparation(self) -> Model1: 
-        train_count = int(0.8 * self.data.shape[0])
+        train_count = self.data.shape[0] - 2
         self.data = self.data.to_numpy(dtype="float32")
         self.data_train = self.data[:train_count]
         self.data_test = self.data[train_count:]
         self.labels = self.labels.to_numpy(dtype="float32")
 
-        print('LOLO')
+        # print('LOLO')
         self.labels = np.insert(self.labels, axis=1, obj=1, values=[(1 ^ round(float(x))) for x in self.labels[:, 0]])
         self.labels_train = self.labels[:train_count]
         self.labels_test = self.labels[train_count:]
 
-        print(self.labels[:100])
+        # print(self.labels[:100])
         # print(self.data_train[:10])
         # print(self.labels_train[:10])
         return self
@@ -58,34 +64,46 @@ class Model1():
         return self
 
     def train_model(self) -> Model1: 
+        # print(self.data_train[:1])
+        # print(self.labels_train[:1])
         self.model.fit(
             x=self.data_train,
             y=self.labels_train,
-            batch_size=32,
-            epochs=500,
-            verbose=2
-        )
-        return self
-
-    def evaluate_model(self) -> Model1:
-        self.model.evaluate(
-            self.data_test,
-            self.labels_test,
-            batch_size=32,
+            batch_size=Model1.BATCH_SIZE,
+            epochs=Model1.EPOCHS,
             verbose=2,
         )
         return self
 
-    def predict(self, x: np.array) -> np.array:
+    def evaluate_model(self) -> Model1:
+        # print(self.data_test[:1])
+        # print(self.labels_test[:1])
+        self.model.evaluate(
+            self.data_test,
+            self.labels_test,
+            batch_size=Model1.BATCH_SIZE,
+            verbose=2,
+        )
+        return self
+
+    def predict(self, x: pd.DataFrame) -> pd.DataFrame:
+        x = x.to_numpy(na_value=0.)
         model = tf.keras.Sequential([self.model, tf.keras.layers.Softmax()])
-        prediction = model.predict(self.data_train, batch_size=32, verbose=2)
+        prediction = model.predict(x, batch_size=32, verbose=2)
         # prediction = self.model.predict(x=self.data_train, batch_size=32, verbose=2)
-        test = pd.DataFrame()
-        test['true-label'] = pd.DataFrame(self.labels_train[:, 0])
-        test['classified-label'] = pd.DataFrame(prediction[:, 0])
+        # test = pd.DataFrame()
+        # test['true-label'] = pd.DataFrame(self.labels_train[:, 0])
+        # test['classified-label'] = pd.DataFrame(prediction[:, 0])
+        # print(test[:333])
         # print(prediction)
         # prediction = prediction.round(decimals=0)
-        print(test[:333])
-        return prediction
+        return pd.DataFrame(
+            data={
+                'prediction': prediction[:, 0],
+            }
+        )
+
+    def get_model(self) -> Model1:
+        return self.model
 
     

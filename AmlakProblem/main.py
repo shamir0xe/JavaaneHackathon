@@ -5,9 +5,11 @@ def main():
     .read_data() \
     .trim_data() \
     .select_columns() \
-    .append_features() \
     .normalize_data() \
+    .append_features() \
     .ml_procedure() \
+    .predict_result() \
+    .read_data() \
     .output()
 
 
