@@ -6,11 +6,11 @@ class GraphBuilder:
     def __init__(
         self, 
         data: pd.DataFrame,
-        threshold: float
+        baseline: pd.DataFrame,
     ) -> None:
         self.graph = []
         self.data = data
-        self.threshold = threshold
+        self.baseline = baseline
 
     def calculate_distance(self) -> GraphBuilder:
         return self

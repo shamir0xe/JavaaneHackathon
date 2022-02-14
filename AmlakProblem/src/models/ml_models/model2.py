@@ -75,7 +75,6 @@ class Model2():
         x = x.to_numpy(na_value=0.)
         model = self.builder.softmax().get_model(True)
         prediction = self.builder.predict(x, batch_size=Model2.BATCH_SIZE)
-        print(f'shape your ass: {prediction.shape}')
         return pd.DataFrame(
             data={
                 'prediction': prediction.to_numpy()[:, 0],

@@ -33,132 +33,122 @@ class FeatureBuilder:
 
     def eature_similarity(self) -> None:
         # data = ...
-        data = DataBuilder(self.data) \
-            .add_image_count() \
-            .add_city() \
-            .add_district() \
-            .add_category() \
-            .add_price_mode() \
-            .add_price() \
-            .add_floor() \
-            .add_size() \
-            .normalize() \
-            .get_data()
-        degrees = GraphBuilder(
-            data=data,
-            threshold=0.1
+        builder = GraphBuilder(
+            data=self.data[['image_count', 'price', 'floor', 'size']],
+            baselines=self.data[['city', 'district']]
         ) \
-            .calculate_distance() \
-            .calculate_degree() \
-            .get_degrees()
-        degrees = pd.DataFrame([1 if x > 0 else 0 for x in degrees])
-        self.data_output['degrees'] = degrees
-        return degrees
+            .build_adjacency() \
+            .calculate_distances()
+        # adding degrees
+        self.concat_frames(builder.get_cummulative_distance())
+        # degrees = pd.DataFrame([1 if x > 0 else 0 for x in degrees])
+        # self.data_output['degrees'] = degrees
+        # return degrees
 
     def concat_frames(self, frame: pd.DataFrame) -> None:
         self.data_output = pd.concat([self.data_output, frame], axis=1)
 
     def feature_district(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'district'
             )
         ) 
     
     def feature_city(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'city'
             )
         )
 
     def feature_category(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'category'
             )
         )
     
     def feature_rent_sale(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'rent_Sale'
             )
         )
     
     def feature_credit_mode(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'credit_mode'
             )
         )
     
     def feature_rent_mode(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'rent_mode'
             )
         )
 
     def feature_price_mode(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'price_mode'
             )
         )
 
     def feature_parking(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'parking'
             )
         )
 
     def feature_chat(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'chat_enabled'
             )
         )
 
     def feature_room(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'room'
             )
         )
     
     def feature_elevator(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'elevator'
             )
         )
 
     def feature_rent_type(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'rent_type'
             )
         )
 
     def feature_user_type(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'user_type'
             )
         )
 
     def feature_rent_to_single(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'rent_to_single'
             )
         )
 
     def feature_rent_credit_transform(self) -> None:
         self.concat_frames(
-            DataHelper.binary_encode_cols(
+            DataHelper.binary_encode_categories(
                 self.data, 'rent_credit_transform'
             )
         )

@@ -26,7 +26,7 @@ class DataHelper:
         return data
     
     @staticmethod
-    def binary_encode_cols(data: pd.DataFrame, categorical_col: str) -> pd.DataFrame :
+    def binary_encode_categories(data: pd.DataFrame, categorical_col: str) -> pd.DataFrame :
         feature_col = DataHelper.map_to_number(data, categorical_col)
         binary_columns = DataHelper.binary_encode(feature_col)
         return binary_columns

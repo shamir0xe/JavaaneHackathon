@@ -6,9 +6,9 @@ import numpy as np
 from src.helpers.data_helper import DataHelper
 from src.helpers.dimension_reducer import DimensionReducer
 from src.models.reducer_types import ReducerTypes
-from src.models.model0 import Model0
-from src.models.model1 import Model1
-from src.models.model2 import Model2
+from src.models.ml_models.model0 import Model0
+from src.models.ml_models.model1 import Model1
+from src.models.ml_models.model2 import Model2
 from src.builders.feature_builder import FeatureBuilder
 
 class AmlakDelegator:
@@ -90,8 +90,6 @@ class AmlakDelegator:
         self.data_train = pd.concat([dataframe, self.data_train['token']], axis=1)
         dataframe = reducer.transform(self.data_validation.drop(['token'], axis=1))
         self.data_validation = pd.concat([dataframe, self.data_validation['token']], axis=1)
-
-        # print(self.data_train[:10])
         return self
 
     def predict_result(self) -> AmlakDelegator:
