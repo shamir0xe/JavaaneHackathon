@@ -8,15 +8,12 @@ import os
 
 
 class Model1():
-    EPOCHS = 20
+    EPOCHS = 55
     BATCH_SIZE = 32
 
     def __init__(self, data: pd.DataFrame, labels: pd.DataFrame) -> None:
         self.data = data
         self.labels = labels
-        # print('HAHAHAHAHAHAHAHAHAHA')
-        # print(len(self.data))
-        # print(len(self.labels))
         self.config()
         
     def config(self) -> Model1:

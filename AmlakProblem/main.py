@@ -7,6 +7,7 @@ def main():
     .select_columns() \
     .normalize_data() \
     .append_features() \
+    .dimension_reduction() \
     .ml_procedure() \
     .predict_result() \
     .read_data() \

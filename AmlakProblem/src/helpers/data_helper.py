@@ -36,7 +36,9 @@ class DataHelper:
         def name_corrector(name: str) -> str:
             if name is None:
                 name = 'unkown'
-            return name.strip().lower()
+            if type(name) is not str:
+                name = str(name)
+            return name.strip()
         # print(data[:33])
         # print(categorical_col)
         # print(data[categorical_col][:10])

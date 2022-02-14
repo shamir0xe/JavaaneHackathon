@@ -4,8 +4,11 @@ import pandas as pd
 import tensorflow as tf
 import numpy as np
 from src.helpers.data_helper import DataHelper
+from src.helpers.dimension_reducer import DimensionReducer
+from src.models.reducer_types import ReducerTypes
 from src.models.model0 import Model0
 from src.models.model1 import Model1
+from src.models.model2 import Model2
 from src.builders.feature_builder import FeatureBuilder
 
 class AmlakDelegator:
@@ -19,7 +22,7 @@ class AmlakDelegator:
         # self.data = pd.read_parquet(DataHelper.data_path('posts.parquet'), 'pyarrow')
         self.data_train = pd.read_csv(DataHelper.data_path('amlakTrain24_2.csv'))
         self.data_validation = pd.read_csv(DataHelper.data_path('amlakValidation24_2.csv'))
-        self.whole_data = pd.read_parquet(DataHelper.data_path('posts.parquet'), engine='pyarrow')
+        self.whole_data = pd.read_csv(DataHelper.data_path('amlak_all_242200.csv'), low_memory=False)
         # print(self.whole_data.columns)
         # print(self.data_train[:33])
         # print(self.whole_data[:10])
@@ -38,15 +41,12 @@ class AmlakDelegator:
     
     def select_columns(self) -> AmlakDelegator:
         self.labels_train = self.data_train[['result']]
-        selection_list = ['token', 'image_count', 'ladder_count', 'click_bookmark', 'click_contact', 'click_post', 'size', 'price_value']
+        selection_list = ['token', 'image_count', 'ladder_count', 'click_bookmark', 'click_contact', 'click_post', 'size', 'price_value', 'floor']
         self.data_train = self.data_train[selection_list]
         self.data_validation = self.data_validation[selection_list]
         return self
     
     def normalize_data(self) -> AmlakDelegator:
-        # print('BEFORE NORMALIZE')
-        # print(self.data_train[:10])
-        # normalizing data
         self.data_train = DataHelper.normalize(self.data_train, ['token'])
         self.data_validation = DataHelper.normalize(self.data_validation, ['token'])
 
@@ -55,14 +55,10 @@ class AmlakDelegator:
             "ok": 0,
             "fake-post": 1
         }, inplace=True)
-
-        # print('YOYOYOYO')
-        # print(len(self.labels_train))
-        # print(len(self.data_train))
         return self
 
     def ml_procedure(self) -> AmlakDelegator:
-        self.model = Model1(
+        self.model = Model2(
             data=self.data_train.drop(['token'], axis=1),
             labels=self.labels_train
         ) \
@@ -79,16 +75,21 @@ class AmlakDelegator:
         .extract_token() \
         .apply_features() \
         .get_extend_data()
-        # print(data_extend[:10])
-        # print(self.data_train[:10])
-
-        # print('YOOOOOOO')
-        # print(len(self.data_train))
-        # print(set(self.data_train['token'].unique()) - set(data_extend['token'].unique()))
-        # print(set(self.data_validation['token'].unique()) - set(data_extend['token'].unique()))
         self.data_train = DataHelper.inner_join(self.data_train, data_extend, 'token')
         self.data_validation = DataHelper.inner_join(self.data_validation, data_extend, 'token')
-        # print(len(self.data_train))
+        return self
+
+    def dimension_reduction(self) -> AmlakDelegator:
+        reducer = DimensionReducer(
+            data=self.data_train.drop(['token'], axis=1), 
+            reducer_type=ReducerTypes.PCA
+        ) \
+            .optimal_components() \
+            .run()
+        dataframe = reducer.transform(self.data_train.drop(['token'], axis=1))
+        self.data_train = pd.concat([dataframe, self.data_train['token']], axis=1)
+        dataframe = reducer.transform(self.data_validation.drop(['token'], axis=1))
+        self.data_validation = pd.concat([dataframe, self.data_validation['token']], axis=1)
 
         # print(self.data_train[:10])
         return self
@@ -100,16 +101,3 @@ class AmlakDelegator:
     def output(self) -> None:
         self.response['token'] = self.data_validation['token']
         self.response.to_csv(DataHelper.data_path('output.csv'), index=False)
-        # print(self.response)
-        # for index, row in self.data.iterrows():
-        #     # if 'عکس' in row['result']:
-        #     print(f'{index} -> {row["tag"]}')
-        # num = 10
-        # data['data'] = self.data.head(num)['data']
-        # data['index'] = self.data.head(num).index
-        # data['district'] = self.data.head(num)['district']
-        # data['valid'] = self.data.head(num)['result']
-        # print(self.data.head(10)['data', 'district'])
-        # print(data)
-        # print(self.data.head(num))
-        # print(self.response)

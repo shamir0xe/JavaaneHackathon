@@ -15,6 +15,7 @@ class FeatureBuilder:
     
     def apply_features(self) -> FeatureBuilder:
         for feature in self.get_features():
+            print(f'building {feature}')
             getattr(FeatureBuilder, feature)(self)
         return self
     
@@ -78,73 +79,99 @@ class FeatureBuilder:
             )
         )
     
-    def feature_floor(self) -> None:
+    def feature_rent_sale(self) -> None:
         self.concat_frames(
             DataHelper.binary_encode_cols(
-                self.data, 'floor'
+                self.data, 'rent_Sale'
             )
         )
     
-    # def feature_rent_sale(self) -> None:
-    #     self.concat_frames(
-    #         DataHelper.binary_encode_cols(
-    #             self.data, 'rent_sale'
-    #         )
-    #     )
+    def feature_credit_mode(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'credit_mode'
+            )
+        )
     
-    # def feature_credit_mode(self) -> None:
-    #     self.concat_frames(
-    #         DataHelper.binary_encode_cols(
-    #             self.data, 'credit_mode'
-    #         )
-    #     )
+    def feature_rent_mode(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'rent_mode'
+            )
+        )
+
+    def feature_price_mode(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'price_mode'
+            )
+        )
+
+    def feature_parking(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'parking'
+            )
+        )
+
+    def feature_chat(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'chat_enabled'
+            )
+        )
+
+    def feature_room(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'room'
+            )
+        )
     
-    # def feature_rent_mode(self) -> None:
-    #     self.concat_frames(
-    #         DataHelper.binary_encode_cols(
-    #             self.data, 'rent_mode'
-    #         )
-    #     )
+    def feature_elevator(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'elevator'
+            )
+        )
 
-    # def feature_price_mode(self) -> None:
-    #     self.concat_frames(
-    #         DataHelper.binary_encode_cols(
-    #             self.data, 'price_mode'
-    #         )
-    #     )
+    def feature_rent_type(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'rent_type'
+            )
+        )
 
-    # def feature_parking(self) -> None:
-    #     self.concat_frames(
-    #         DataHelper.binary_encode_cols(
-    #             self.data, 'parking'
-    #         )
-    #     )
+    def feature_user_type(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'user_type'
+            )
+        )
 
-    # def feature_chat(self) -> None:
-    #     self.concat_frames(
-    #         DataHelper.binary_encode_cols(
-    #             self.data, 'chat_enabled'
-    #         )
-    #     )
+    def feature_rent_to_single(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'rent_to_single'
+            )
+        )
 
-    # def feature_room(self) -> None:
-    #     self.concat_frames(
-    #         DataHelper.binary_encode_cols(
-    #             self.data, 'room'
-    #         )
-    #     )
+    def feature_rent_credit_transform(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_cols(
+                self.data, 'rent_credit_transform'
+            )
+        )
 
+    # def eature_duplicate_picture(self) -> None:
+    #     pass
+    #     # print('in duplicate feature')
 
+    # def eature_incorrect_address(self) -> None:
+    #     pass
+    #     # print('in incorrect address feature')
 
-    def eature_duplicate_picture(self) -> None:
-        pass
-        # print('in duplicate feature')
-
-    def eature_incorrect_address(self) -> None:
-        pass
-        # print('in incorrect address feature')
-
-    def eature_rent_before(self) -> None:
-        pass
-        # print('in rent before feature')
+    # def eature_rent_before(self) -> None:
+    #     pass
+    #     # print('in rent before feature')
 
