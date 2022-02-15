@@ -20,10 +20,14 @@
         "name": "output.csv"
     },
     "features": {
+        "no_dim_reduction_list": ["distance_sum"],
         "similarity": {
             "numerical_selection": ["image_count", "ladder_count", "click_bookmark", "click_contact", "click_post", "size", "price_value", "floor", "room"],
             "categorical_selection": ["city", "district", "parking", "rent_sale"],
             "cluster_count": 3333
         }
+    },
+    "dimension_reducer": {
+        "components_count": 222
     }
 }

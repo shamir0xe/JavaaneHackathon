@@ -6,7 +6,7 @@ def main():
     .trim_data() \
     .select_columns() \
     .normalize_data() \
-    .bare_tokens() \
+    .backup_data() \
     .append_features() \
     .append_numerical_data() \
     .ml_procedure() \

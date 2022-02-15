@@ -41,7 +41,7 @@ class AmlakDelegator:
         self.data_train.reset_index(drop=True, inplace=True)
         return self
 
-    def bare_tokens(self) -> AmlakDelegator:
+    def backup_data(self) -> AmlakDelegator:
         # just remember tokens
         self.data_train_bc = self.data_train.copy()
         self.data_train = self.data_train[['token']]
@@ -59,7 +59,6 @@ class AmlakDelegator:
         # select desired columns
         self.labels_train = self.data_train[['result']]
         selection_list = ConfigReader.read('selection_list')
-        # selection_list = ['token', 'image_count', 'ladder_count', 'click_bookmark', 'click_contact', 'click_post', 'size', 'price_value', 'floor']
         self.data_train = self.data_train[selection_list]
         self.data_validation = self.data_validation[selection_list]
         return self
@@ -90,19 +89,28 @@ class AmlakDelegator:
 
     def append_features(self) -> AmlakDelegator:
         # append features from whole data
-        if ArgumentHelper.exists('cached_categories_dataset') and MemoryHelper.cached('categories_dataset'):
+        if ArgumentHelper.exists('cache') and MemoryHelper.cached('categories_dataset'):
             self.data_train, self.data_validation = MemoryHelper.retrieve('categories_dataset')
             return self
         whole_data = pd.read_csv(DataHelper.data_path(ConfigReader.read('data.whole_data.name')), low_memory=False)
-        data_extend = FeatureBuilder(
+        builder = FeatureBuilder(
             data=whole_data, 
         ) \
         .extract_token() \
-        .apply_features() \
-        .get_extend_data()
+        .apply_features()
+
+        data_extend = builder.get_extend_data(exception_list=ConfigReader.read('features.no_dim_reduction_list'))
         self.data_train = DataHelper.inner_join(self.data_train, data_extend, 'token')
         self.data_validation = DataHelper.inner_join(self.data_validation, data_extend, 'token')
         self.dimension_reduction()
+
+        # data_extend = builder.get_extend_data(selection_list=ConfigReader.read('features.no_dim_reduction_list'))
+        # self.data_train = DataHelper.inner_join(self.data_train, data_extend, 'token')
+        # self.data_validation = DataHelper.inner_join(self.data_validation, data_extend, 'token')
+
+        # normalizing data
+        self.data_train = DataHelper.normalize(self.data_train, ['token'])
+        self.data_validation = DataHelper.normalize(self.data_validation, ['token'])
         MemoryHelper.save('categories_dataset', (self.data_train, self.data_validation))
         return self
 

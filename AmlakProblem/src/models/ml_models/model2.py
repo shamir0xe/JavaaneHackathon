@@ -9,7 +9,7 @@ from src.builders.model_builder import ModelBuilder
 
 
 class Model2():
-    EPOCHS = 22
+    EPOCHS = 35
     BATCH_SIZE = 32
     L1_REGULARIZER = 0.001
     L2_REGULARIZER = 0.0001

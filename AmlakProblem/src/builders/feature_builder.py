@@ -29,7 +29,8 @@ class FeatureBuilder:
             callable(getattr(FeatureBuilder, func)) and func.startswith('feature')
         ]
     
-    def get_extend_data(self) -> pd.DataFrame:
+    def get_extend_data(self, exception_list: list = [], selection_list: list = []) -> pd.DataFrame:
+        # TODO
         return self.data_output
 
     def concat_frames(self, frame: pd.DataFrame) -> None:

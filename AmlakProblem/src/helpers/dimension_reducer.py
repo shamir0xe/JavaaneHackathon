@@ -2,8 +2,8 @@ from __future__ import annotations
 import pandas as pd
 import sklearn
 from src.models.reducer_types import ReducerTypes
-# from src.helpers.config_reader import ConfigReader
 from sklearn.decomposition import PCA
+from src.helpers.config_reader import ConfigReader
 
 
 class DimensionReducer:
@@ -19,7 +19,8 @@ class DimensionReducer:
     
     def optimal_components(self) -> DimensionReducer:
         # self.components_count = ConfigReader.read('dimension_reducer.components_count_default')
-        self.components_count = 200
+        # print('shapes: ', self.data.shape)
+        self.components_count = min(ConfigReader.read('dimension_reducer.components_count'), self.data.shape[0], self.data.shape[1])
         self.run()
         variances = self.reducer.explained_variance_ratio_
         s, index = 0, 0
