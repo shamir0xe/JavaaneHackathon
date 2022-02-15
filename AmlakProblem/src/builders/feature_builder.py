@@ -1,5 +1,6 @@
 from __future__ import annotations
 import pandas as pd
+from src.helpers.config_reader import ConfigReader
 from src.helpers.data_helper import DataHelper
 from src.builders.data_builder import DataBuilder
 from src.builders.graph_builder import GraphBuilder
@@ -31,12 +32,16 @@ class FeatureBuilder:
     def get_extend_data(self) -> pd.DataFrame:
         return self.data_output
 
+    def concat_frames(self, frame: pd.DataFrame) -> None:
+        self.data_output = pd.concat([self.data_output, frame], axis=1)
+
     def eature_similarity(self) -> None:
         # data = ...
         builder = GraphBuilder(
-            data=self.data[['image_count', 'price', 'floor', 'size']],
-            baselines=self.data[['city', 'district']]
+            numerical_data=self.data[ConfigReader.read('features.similarity.numerical_selection')],
+            categorical_data=self.data[ConfigReader.read('features.similarity.categorical_selection')],
         ) \
+            .cluster_data(cluster_count=ConfigReader.read('features.similarity.cluster_count')) \
             .build_adjacency() \
             .calculate_distances()
         # adding degrees
@@ -44,9 +49,6 @@ class FeatureBuilder:
         # degrees = pd.DataFrame([1 if x > 0 else 0 for x in degrees])
         # self.data_output['degrees'] = degrees
         # return degrees
-
-    def concat_frames(self, frame: pd.DataFrame) -> None:
-        self.data_output = pd.concat([self.data_output, frame], axis=1)
 
     def feature_district(self) -> None:
         self.concat_frames(

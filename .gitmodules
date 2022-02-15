@@ -1,0 +1,6 @@
+[submodule "AmlakProblem/libs/PythonLibrary"]
+	path = AmlakProblem/libs/PythonLibrary
+	url = https://github.com/shamir0xe/PythonLibrary.git
+[submodule "AmlakProblem/libs/python_library"]
+	path = AmlakProblem/libs/python_library
+	url = https://github.com/shamir0xe/PythonLibrary.git

@@ -131,5 +131,9 @@ class ModelBuilder:
 
     def get_model(self, fresh=False) -> tf.keras.Model:
         if fresh or self.model is None:
-            self.model = tf.keras.Model(self.input_layer, self.output_layer)
+            self.build_model()
         return self.model
+    
+    def build_model(self) -> ModelBuilder:
+        self.model = tf.keras.Model(self.input_layer, self.output_layer)
+        return self

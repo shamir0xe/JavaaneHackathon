@@ -9,12 +9,15 @@ from src.builders.model_builder import ModelBuilder
 
 
 class Model2():
-    EPOCHS = 3
+    EPOCHS = 22
     BATCH_SIZE = 32
     L1_REGULARIZER = 0.001
     L2_REGULARIZER = 0.0001
 
-    def __init__(self, data: pd.DataFrame, labels: pd.DataFrame) -> None:
+    def __init__(self, 
+        data: pd.DataFrame, 
+        labels: pd.DataFrame,
+    ) -> None:
         self.data = data
         self.labels = labels
         self.config()
@@ -73,8 +76,12 @@ class Model2():
 
     def predict(self, x: pd.DataFrame) -> pd.DataFrame:
         x = x.to_numpy(na_value=0.)
-        model = self.builder.softmax().get_model(True)
-        prediction = self.builder.predict(x, batch_size=Model2.BATCH_SIZE)
+        self.builder.softmax().build_model()
+        prediction = self.builder \
+            .softmax() \
+            .build_model() \
+            .predict(x, batch_size=Model2.BATCH_SIZE)
+        # print(prediction[:10])
         return pd.DataFrame(
             data={
                 'prediction': prediction.to_numpy()[:, 0],

@@ -1,0 +1,29 @@
+{
+    "selection_list": [
+        "token", "image_count", "ladder_count", "click_bookmark", 
+        "click_contact", "click_post", "size", "price_value", "floor", 
+        "room", "year", "chat_enabled", "parking", "rent_value", 
+        "credit_value"
+    ],
+    "data": {
+        "whole_data": {
+            "name": "amlak_all_242200.csv"
+        },
+        "train": {
+            "name": "amlakTrain24_2.csv"
+        },
+        "validation": {
+            "name": "amlakValidation24_2.csv"
+        }
+    },
+    "output": {
+        "name": "output.csv"
+    },
+    "features": {
+        "similarity": {
+            "numerical_selection": ["image_count", "ladder_count", "click_bookmark", "click_contact", "click_post", "size", "price_value", "floor", "room"],
+            "categorical_selection": ["city", "district", "parking", "rent_sale"],
+            "cluster_count": 3333
+        }
+    }
+}

@@ -1,6 +1,4 @@
 import os
-from turtle import back
-from xml.sax.handler import feature_string_interning
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -27,32 +25,29 @@ class DataHelper:
     
     @staticmethod
     def binary_encode_categories(data: pd.DataFrame, categorical_col: str) -> pd.DataFrame :
-        feature_col = DataHelper.map_to_number(data, categorical_col)
+        feature_col = DataHelper.categorical_to_numerical(data, categorical_col)
         binary_columns = DataHelper.binary_encode(feature_col)
         return binary_columns
 
     @staticmethod
-    def map_to_number(data: pd.DataFrame, categorical_col: str) -> pd.DataFrame:
+    def categorical_to_numerical(data: pd.DataFrame, categorical_col: str) -> pd.DataFrame:
         def name_corrector(name: str) -> str:
             if name is None:
                 name = 'unkown'
             if type(name) is not str:
                 name = str(name)
             return name.strip()
-        # print(data[:33])
-        # print(categorical_col)
-        # print(data[categorical_col][:10])
         cols = data[categorical_col].unique()
         uniques = {}
         for col in cols:
             col = name_corrector(col)
-            # print(f'new col: [{col}]')
             if not col in uniques:
                 uniques[col] = len(uniques)
         return pd.DataFrame([uniques[name_corrector(col)] for col in data[categorical_col]], columns=[categorical_col])
     
     @staticmethod
     def binary_encode(feature_col: pd.DataFrame) -> pd.DataFrame:
+        # receving integer labels and returns 1hot encoding
         unique_count = feature_col.iloc[:, 0].max() + 1
         row_count = feature_col.shape[0]
         print(f'uniques, row_count = {unique_count}, {row_count}')
