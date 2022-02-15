@@ -1,6 +1,5 @@
 *.parquet
 *.pyc
 *.csv
-*.cache
 *.lock
 
