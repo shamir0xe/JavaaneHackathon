@@ -3,28 +3,33 @@
         "token", "image_count", "ladder_count", "click_bookmark", 
         "click_contact", "click_post", "size", "price_value", "floor", 
         "room", "year", "chat_enabled", "parking", "rent_value", 
-        "credit_value"
+        "credit_value", "count_na"
     ],
     "data": {
         "whole_data": {
-            "name": "amlak_all_242200.csv"
+            "name": "amlak_all_261800.csv"
         },
         "train": {
-            "name": "amlakTrain24_2.csv"
+            "name": "amlakTrain261800.csv"
         },
         "validation": {
-            "name": "amlakValidation24_2.csv"
+            "name": "amlakValidation261800.csv"
         }
     },
     "output": {
         "name": "output.csv"
     },
     "features": {
-        "no_dim_reduction_list": ["distance_sum"],
+        "no_dim_reduction_list": ["acos_degree_centrality", "euclidian_degree_centrality", "acos_mean_weights", 
+            "euclidian_mean_weights", "euclidian_load_centrality", "acos_load_centrality"],
         "similarity": {
-            "numerical_selection": ["image_count", "ladder_count", "click_bookmark", "click_contact", "click_post", "size", "price_value", "floor", "room"],
-            "categorical_selection": ["city", "district", "parking", "rent_sale"],
-            "cluster_count": 3333
+            "numerical_selection": ["size", "price_value", "floor", "room", "year", "rent_value", 
+                "credit_value"],
+            "categorical_selection": ["city", "district", "category", "rent_type", "price_mode", "warehouse"],
+            "cluster_count": 22,
+            "degree_centrality": {
+                "threshold": 0.45
+            }
         }
     },
     "dimension_reducer": {

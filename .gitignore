@@ -2,4 +2,5 @@
 *.pyc
 *.csv
 *.lock
+AmlakProblem/database/cache
 

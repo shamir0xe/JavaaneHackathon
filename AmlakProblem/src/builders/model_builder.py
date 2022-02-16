@@ -5,8 +5,9 @@ import math
 import tensorflow as tf
 import numpy as np
 import pandas as pd
+from src.helpers.data_helper import DataHelper
+from src.helpers.memory_helper import MemoryHelper
 from src.models.tensor_model import TensorModel
-
 
 
 class ModelBuilder:
@@ -52,7 +53,14 @@ class ModelBuilder:
         self.metric = metric
         return self
     
-    def save_model(self) -> ModelBuilder:
+    def save_model(self, epoch: int) -> ModelBuilder:
+        self.get_model().save_weights(DataHelper.cache_path(f'tf_model_{epoch}'))
+        # print('model saved at epoch %d' % epoch)
+        return self
+    
+    def load_model(self, epoch: int) -> ModelBuilder:
+        self.get_model().load_weights(DataHelper.cache_path(f'tf_model_{epoch}'))
+        # print('model retrieved at epoch %d' % epoch)
         return self
     
     def train_with_validation(self, train_dataset, val_dataset, epochs) -> ModelBuilder:
@@ -65,10 +73,11 @@ class ModelBuilder:
             if val_acc > max_auc:
                 max_auc = val_acc
                 index = epoch
-                self.save_model()
+                self.save_model(index)
             print("epoch[%02d]: time=%.02fs, traininig_loss=%0.4f, training_auc=%.04f, evaluation_auc=%.04f" % 
             (epoch, time.time() - start_time, tup[1], tup[0], val_acc))
         print(f'the best epoch={index}, best metric={max_auc}')
+        self.best_epoch = index
         return self
     
     @tf.function

@@ -9,7 +9,7 @@ from src.builders.model_builder import ModelBuilder
 
 
 class Model2():
-    EPOCHS = 35
+    EPOCHS = 111
     BATCH_SIZE = 32
     L1_REGULARIZER = 0.001
     L2_REGULARIZER = 0.0001
@@ -57,6 +57,8 @@ class Model2():
             .dropout(0.5) \
             .dense(128, activation='relu') \
             .dropout(0.2) \
+            .dense(64, activation='relu') \
+            .dropout(0.1) \
             .dense(2) \
             .set_optimizer(tf.keras.optimizers.Adam()) \
             .set_loss_fn(tf.keras.losses.CategoricalCrossentropy(from_logits=True)) \
@@ -68,6 +70,7 @@ class Model2():
         return self
 
     def evaluate_model(self) -> Model2:
+        self.builder.load_model(self.builder.best_epoch)
         val_acc = self.builder.evaluate(
             self.val_dataset,
         )

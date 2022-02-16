@@ -13,7 +13,6 @@ def main():
     .predict_result() \
     .read_data() \
     .output()
-    # .dimension_reduction() \
 
 
 if __name__ == '__main__':

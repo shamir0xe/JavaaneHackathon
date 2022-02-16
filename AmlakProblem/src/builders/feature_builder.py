@@ -1,8 +1,9 @@
 from __future__ import annotations
 import pandas as pd
+from src.models.distance_types import DistanceTypes
+from src.models.normalize_types import NormalizeTypes
 from src.helpers.config_reader import ConfigReader
 from src.helpers.data_helper import DataHelper
-from src.builders.data_builder import DataBuilder
 from src.builders.graph_builder import GraphBuilder
 
 
@@ -29,27 +30,59 @@ class FeatureBuilder:
             callable(getattr(FeatureBuilder, func)) and func.startswith('feature')
         ]
     
-    def get_extend_data(self, exception_list: list = [], selection_list: list = []) -> pd.DataFrame:
-        # TODO
-        return self.data_output
+    def get_extend_data(self, exception_list: list=[], selection_list: list=[]) -> pd.DataFrame:
+        if len(selection_list) == 0:
+            selection_list = self.data_output.columns
+        else:
+            selection_list = [*selection_list, 'token']
+        selection_list = list(set(selection_list) - set(exception_list))
+        not_available_list = list(set(selection_list) - set(self.data_output.columns))
+        selection_list = list(set(selection_list) - set(not_available_list))
+        selection_list.sort()
+        return self.data_output[selection_list]
 
     def concat_frames(self, frame: pd.DataFrame) -> None:
         self.data_output = pd.concat([self.data_output, frame], axis=1)
 
-    def eature_similarity(self) -> None:
-        # data = ...
+    def graph_builder_factory(self, distance_type: str) -> GraphBuilder:
+        # reading and normalizing data first
+        data = DataHelper.normalize(self.data[ConfigReader.read('features.similarity.numerical_selection')], mode=NormalizeTypes.STD)
+        for category in ConfigReader.read('features.similarity.categorical_selection'):
+            data = pd.concat([data, DataHelper.categorical_to_numerical(self.data, category)], axis=1)
+        # generating graph builder
         builder = GraphBuilder(
-            numerical_data=self.data[ConfigReader.read('features.similarity.numerical_selection')],
-            categorical_data=self.data[ConfigReader.read('features.similarity.categorical_selection')],
+            data=data,
+            distance_type=distance_type
         ) \
-            .cluster_data(cluster_count=ConfigReader.read('features.similarity.cluster_count')) \
+            .normalize_data() \
+            .cluster_data() \
+            .build_graphs() \
             .build_adjacency() \
-            .calculate_distances()
-        # adding degrees
-        self.concat_frames(builder.get_cummulative_distance())
-        # degrees = pd.DataFrame([1 if x > 0 else 0 for x in degrees])
-        # self.data_output['degrees'] = degrees
-        # return degrees
+            .normalize_weights()
+        return builder
+
+    def feature_aimilarity(self) -> None:
+        # adding similarity feature
+        for distance_type in [DistanceTypes.ACOS, DistanceTypes.EUCLIDIAN]:
+            # creating builder
+            builder = self.graph_builder_factory(distance_type=distance_type)
+            # adding centralities
+            self.concat_frames(builder.get_degree_centrality(threshold=ConfigReader.read('features.similarity.degree_centrality.threshold')))
+            self.concat_frames(builder.get_mean_weights())
+            self.concat_frames(builder.get_load_centrality(threshold=ConfigReader.read('features.similarity.degree_centrality.threshold')))
+
+            # self.concat_frames(builder.get_harmonic_centrality(threshold=ConfigReader.read('features.similarity.degree_centrality.threshold')))
+            # self.concat_frames(builder.get_closeness_centrality(threshold=ConfigReader.read('features.similarity.degree_centrality.threshold')))
+            # self.concat_frames(builder.get_betweenness_centrality(threshold=ConfigReader.read('features.similarity.degree_centrality.threshold')))
+
+            # try:
+            #     self.concat_frames(builder.get_subgraph_centrality(threshold=ConfigReader.read('features.similarity.degree_centrality.threshold')))
+            # except BaseException as err :
+            #     print('subgraph centrality error occured: ', err)
+            # try:
+            #     self.concat_frames(builder.get_second_order_centrality(threshold=ConfigReader.read('features.similarity.degree_centrality.threshold')))
+            # except BaseException as err:
+            #     print('second order centrality error occured: ', err)
 
     def feature_district(self) -> None:
         self.concat_frames(
@@ -69,13 +102,6 @@ class FeatureBuilder:
         self.concat_frames(
             DataHelper.binary_encode_categories(
                 self.data, 'category'
-            )
-        )
-    
-    def feature_rent_sale(self) -> None:
-        self.concat_frames(
-            DataHelper.binary_encode_categories(
-                self.data, 'rent_Sale'
             )
         )
     
@@ -100,45 +126,10 @@ class FeatureBuilder:
             )
         )
 
-    def feature_parking(self) -> None:
-        self.concat_frames(
-            DataHelper.binary_encode_categories(
-                self.data, 'parking'
-            )
-        )
-
-    def feature_chat(self) -> None:
-        self.concat_frames(
-            DataHelper.binary_encode_categories(
-                self.data, 'chat_enabled'
-            )
-        )
-
-    def feature_room(self) -> None:
-        self.concat_frames(
-            DataHelper.binary_encode_categories(
-                self.data, 'room'
-            )
-        )
-    
-    def feature_elevator(self) -> None:
-        self.concat_frames(
-            DataHelper.binary_encode_categories(
-                self.data, 'elevator'
-            )
-        )
-
     def feature_rent_type(self) -> None:
         self.concat_frames(
             DataHelper.binary_encode_categories(
                 self.data, 'rent_type'
-            )
-        )
-
-    def feature_user_type(self) -> None:
-        self.concat_frames(
-            DataHelper.binary_encode_categories(
-                self.data, 'user_type'
             )
         )
 
@@ -153,6 +144,48 @@ class FeatureBuilder:
         self.concat_frames(
             DataHelper.binary_encode_categories(
                 self.data, 'rent_credit_transform'
+            )
+        )
+
+    def feature_rent_sale(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_categories(
+                self.data, 'rent_sale'
+            )
+        )
+
+    def feature_chat_enabled(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_categories(
+                self.data, 'chat_enabled'
+            )
+        )
+
+    def feature_parking(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_categories(
+                self.data, 'parking'
+            )
+        )
+
+    def feature_elevator(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_categories(
+                self.data, 'elevator'
+            )
+        )
+
+    def feature_user_type(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_categories(
+                self.data, 'user_type'
+            )
+        )
+
+    def feature_warehouse(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_categories(
+                self.data, 'warehouse'
             )
         )
 

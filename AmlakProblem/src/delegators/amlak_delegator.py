@@ -8,6 +8,7 @@ from src.models.reducer_types import ReducerTypes
 from src.models.ml_models.model0 import Model0
 from src.models.ml_models.model1 import Model1
 from src.models.ml_models.model2 import Model2
+from src.models.normalize_types import NormalizeTypes
 from src.builders.feature_builder import FeatureBuilder
 from src.helpers.config_reader import ConfigReader
 from src.helpers.argument_helper import ArgumentHelper
@@ -51,8 +52,8 @@ class AmlakDelegator:
     
     def append_numerical_data(self) -> AmlakDelegator:
         # append numerical backups again
-        self.data_train = DataHelper.inner_join(self.data_train_bc, self.data_train, 'token')
-        self.data_validation = DataHelper.inner_join(self.data_validation_bc, self.data_validation, 'token')
+        self.data_train = DataHelper.left_join(self.data_train_bc, self.data_train, 'token')
+        self.data_validation = DataHelper.left_join(self.data_validation_bc, self.data_validation, 'token')
         return self
     
     def select_columns(self) -> AmlakDelegator:
@@ -63,11 +64,14 @@ class AmlakDelegator:
         self.data_validation = self.data_validation[selection_list]
         return self
     
+    def normalize_dataset(self, mode: str=NormalizeTypes.BOTH) -> AmlakDelegator:
+        self.data_train = DataHelper.normalize(self.data_train, except_cols=['token'], mode=mode)
+        self.data_validation = DataHelper.normalize(self.data_validation, except_cols=['token'], mode=mode)
+        return self
+
     def normalize_data(self) -> AmlakDelegator:
         # normalizing data
-        self.data_train = DataHelper.normalize(self.data_train, ['token'])
-        self.data_validation = DataHelper.normalize(self.data_validation, ['token'])
-
+        self.normalize_dataset()
         # correcting labels
         self.labels_train["result"].replace({
             "ok": 0,
@@ -76,6 +80,7 @@ class AmlakDelegator:
         return self
 
     def ml_procedure(self) -> AmlakDelegator:
+        # print(self.data_train[:10])
         # learning model
         self.model = Model2(
             data=self.data_train.drop(['token'], axis=1),
@@ -87,32 +92,38 @@ class AmlakDelegator:
         .evaluate_model()
         return self
 
+    def join_dataset(self, data: pd.DataFrame, on: str) -> None:
+        self.data_train = DataHelper.left_join(self.data_train, data, on)
+        self.data_validation = DataHelper.left_join(self.data_validation, data, on)
+
     def append_features(self) -> AmlakDelegator:
         # append features from whole data
         if ArgumentHelper.exists('cache') and MemoryHelper.cached('categories_dataset'):
             self.data_train, self.data_validation = MemoryHelper.retrieve('categories_dataset')
             return self
         whole_data = pd.read_csv(DataHelper.data_path(ConfigReader.read('data.whole_data.name')), low_memory=False)
+        whole_data.fillna(0)
         builder = FeatureBuilder(
-            data=whole_data, 
+            data=whole_data,
         ) \
         .extract_token() \
         .apply_features()
 
-        data_extend = builder.get_extend_data(exception_list=ConfigReader.read('features.no_dim_reduction_list'))
-        self.data_train = DataHelper.inner_join(self.data_train, data_extend, 'token')
-        self.data_validation = DataHelper.inner_join(self.data_validation, data_extend, 'token')
+        self.join_dataset(builder.get_extend_data(exception_list=ConfigReader.read('features.no_dim_reduction_list')), 'token')
         self.dimension_reduction()
+        self.join_dataset(builder.get_extend_data(selection_list=ConfigReader.read('features.no_dim_reduction_list')), 'token')
 
-        # data_extend = builder.get_extend_data(selection_list=ConfigReader.read('features.no_dim_reduction_list'))
-        # self.data_train = DataHelper.inner_join(self.data_train, data_extend, 'token')
-        # self.data_validation = DataHelper.inner_join(self.data_validation, data_extend, 'token')
-
+        print(self.data_train[:10])
+        # self.join_shit()
         # normalizing data
-        self.data_train = DataHelper.normalize(self.data_train, ['token'])
-        self.data_validation = DataHelper.normalize(self.data_validation, ['token'])
+        self.normalize_dataset(mode=NormalizeTypes.MAX_MIN)
         MemoryHelper.save('categories_dataset', (self.data_train, self.data_validation))
         return self
+    
+    def join_shit(self):
+        data_train, data_validation = MemoryHelper.retrieve('graph_dataset_1')
+        self.data_train = DataHelper.left_join(self.data_train, data_train, 'token')
+        self.data_validation = DataHelper.left_join(self.data_validation, data_validation, 'token')
 
     def dimension_reduction(self) -> AmlakDelegator:
         # reducing dimensions
@@ -127,7 +138,7 @@ class AmlakDelegator:
         dataframe = reducer.transform(self.data_validation.drop(['token'], axis=1))
         self.data_validation = pd.concat([dataframe, self.data_validation['token']], axis=1)
         return self
-
+    
     def predict_result(self) -> AmlakDelegator:
         # predicting result
         self.response = self.model.predict(self.data_validation.drop(['token'], axis=1))
@@ -137,3 +148,18 @@ class AmlakDelegator:
         # saving tesult to the output file
         self.response['token'] = self.data_validation['token']
         self.response.to_csv(DataHelper.data_path(ConfigReader.read('output.name')), index=False)
+    
+    def test(self) -> AmlakDelegator:
+        self.data_train, self.data_validation = MemoryHelper.retrieve('categories_dataset')
+        cols = self.data_train.columns
+        graph_cols = []
+        for col in cols:
+            bl = False
+            for i in range(10):
+                if str(i) in col:
+                    bl = True
+            if not bl:
+                graph_cols.append(col)
+        print(self.data_train[graph_cols][:10])
+        MemoryHelper.save('graph_dataset_1', (self.data_train[graph_cols], self.data_validation[graph_cols]))
+        return self

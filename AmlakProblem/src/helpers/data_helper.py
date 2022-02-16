@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
+from src.models.normalize_types import NormalizeTypes
+
 
 class DataHelper:
     @staticmethod
@@ -10,17 +12,35 @@ class DataHelper:
         return os.path.join(os.path.dirname(__file__), '../../database', filename)
     
     @staticmethod
-    def inner_join(data1: pd.DataFrame, data2: pd.DataFrame, col: str) -> pd.DataFrame:
-        return pd.merge(data1, data2, on=col)
+    def cache_path(filename: str) -> str:
+        if filename is None:
+            return DataHelper.data_path('caches')
+        return os.path.join(DataHelper.data_path('caches'), filename)
+    
+    @staticmethod
+    def left_join(data1: pd.DataFrame, data2: pd.DataFrame, col: str) -> pd.DataFrame:
+        return pd.merge(left=data1, right=data2, on=col, how='left')
 
     @staticmethod
-    def normalize(data: pd.DataFrame, except_cols: list) -> pd.DataFrame:
-        backup_data = data[except_cols]
-        data = data.drop(except_cols, axis=1)
+    def normalize(data: pd.DataFrame, except_cols: list=[], mode: str=NormalizeTypes.BOTH) -> pd.DataFrame:
+        def std(data: pd.DataFrame) -> pd.DataFrame:
+            return (data - data.mean()) / data.std()
+
+        def max_min(data: pd.DataFrame) -> pd.DataFrame:
+            return (data - data.min()) / (data.max() - data.min())
+
+        if len(except_cols) != 0:
+            backup_data = data[except_cols]
+            data = data.drop(except_cols, axis=1)
         data = data.fillna(0)
-        data = (data - data.mean()) / data.std()
-        data = (data - data.min()) / (data.max() - data.min())
-        data = pd.concat([data, backup_data], axis=1)
+        if mode is NormalizeTypes.BOTH:
+            data = max_min(std(data))
+        elif mode is NormalizeTypes.STD:
+            data = std(data)
+        elif mode is NormalizeTypes.MAX_MIN:
+            data = max_min(data)
+        if len(except_cols) != 0:
+            data = pd.concat([data, backup_data], axis=1)
         return data
     
     @staticmethod
