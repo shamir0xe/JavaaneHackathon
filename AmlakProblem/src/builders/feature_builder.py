@@ -1,10 +1,14 @@
 from __future__ import annotations
+import numpy as np
 import pandas as pd
+from tqdm import tqdm
+from src.helpers.time_helper import TimeHelper
 from src.models.distance_types import DistanceTypes
 from src.models.normalize_types import NormalizeTypes
-from src.helpers.config_reader import ConfigReader
+from src.facades.config_reader import ConfigReader
 from src.helpers.data_helper import DataHelper
 from src.builders.graph_builder import GraphBuilder
+import networkx as nx
 
 
 class FeatureBuilder:
@@ -24,7 +28,7 @@ class FeatureBuilder:
     def extract_token(self) -> FeatureBuilder:
         self.data_output['token'] = self.data['token']
         return self
-
+    
     def get_features(self) -> list:
         return [func for func in dir(FeatureBuilder) if \
             callable(getattr(FeatureBuilder, func)) and func.startswith('feature')
@@ -43,12 +47,14 @@ class FeatureBuilder:
 
     def concat_frames(self, frame: pd.DataFrame) -> None:
         self.data_output = pd.concat([self.data_output, frame], axis=1)
+        self.data_output.reset_index(drop=True, inplace=True)
 
     def graph_builder_factory(self, distance_type: str) -> GraphBuilder:
         # reading and normalizing data first
         data = DataHelper.normalize(self.data[ConfigReader.read('features.similarity.numerical_selection')], mode=NormalizeTypes.STD)
         for category in ConfigReader.read('features.similarity.categorical_selection'):
             data = pd.concat([data, DataHelper.categorical_to_numerical(self.data, category)], axis=1)
+            data.reset_index(drop=True, inplace=True)
         # generating graph builder
         builder = GraphBuilder(
             data=data,
@@ -61,7 +67,7 @@ class FeatureBuilder:
             .normalize_weights()
         return builder
 
-    def feature_aimilarity(self) -> None:
+    def eature_aimilarity(self) -> None:
         # adding similarity feature
         for distance_type in [DistanceTypes.ACOS, DistanceTypes.EUCLIDIAN]:
             # creating builder
@@ -83,6 +89,22 @@ class FeatureBuilder:
             #     self.concat_frames(builder.get_second_order_centrality(threshold=ConfigReader.read('features.similarity.degree_centrality.threshold')))
             # except BaseException as err:
             #     print('second order centrality error occured: ', err)
+
+    
+
+    def feature_is_new(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_categories(
+                self.data, 'is_new'
+            )
+        ) 
+
+    def feature_is_amlak(self) -> None:
+        self.concat_frames(
+            DataHelper.binary_encode_categories(
+                self.data, 'is_amlak'
+            )
+        ) 
 
     def feature_district(self) -> None:
         self.concat_frames(

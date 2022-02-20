@@ -5,7 +5,7 @@ import numpy as np
 import networkx as nx
 from sklearn.cluster import KMeans
 from sklearn.neighbors import KDTree
-from src.helpers.config_reader import ConfigReader
+from src.facades.config_reader import ConfigReader
 
 from src.helpers.data_helper import DataHelper
 from src.models.normalize_types import NormalizeTypes

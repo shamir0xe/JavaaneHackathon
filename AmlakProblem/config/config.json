@@ -1,19 +1,52 @@
 {
     "selection_list": [
-        "token", "image_count", "ladder_count", "click_bookmark", 
+        "image_count", "ladder_count", "click_bookmark", 
         "click_contact", "click_post", "size", "price_value", "floor", 
         "room", "year", "chat_enabled", "parking", "rent_value", 
-        "credit_value", "count_na"
-    ],
-    "data": {
+        "credit_value", "count_na"],
+    
+    "text": {
+        "selection_list": ["description2", "title2"],
+        "vector_size": 100,
+        "final_col_count": 20,
         "whole_data": {
-            "name": "amlak_all_261800.csv"
+            "name": "whole_data.csv",
+            "output": "whole_data_ptext.csv"
         },
         "train": {
-            "name": "amlakTrain261800.csv"
+            "name": "amlakTrain261800.csv",
+            "output": "data_train_ptext.csv"
         },
         "validation": {
-            "name": "amlakValidation261800.csv"
+            "name": "amlakValidation261800.csv",
+            "output": "data_validation_ptext.csv"
+        }
+    },
+    "picture": {
+        "train": {
+            "name": "data_train_ptext.csv",
+            "output": "data_train_pic.csv"
+        },
+        "validation": {
+            "name": "data_validation_ptext.csv",
+            "output": "data_validation_pic.csv"
+        },
+        "whole_data": {
+            "name": "whole_data.csv"
+        },
+        "final_col_count": 200,
+        "n_pictures": 22,
+        "n_fraction": 4
+    },
+    "data": {
+        "whole_data": {
+            "name": "0x0xwhole_data.csv"
+        },
+        "train": {
+            "name": "0x0x0xdata_train.csv"
+        },
+        "validation": {
+            "name": "0x0x0xdata_validation.csv"
         }
     },
     "output": {
@@ -23,9 +56,8 @@
         "no_dim_reduction_list": ["acos_degree_centrality", "euclidian_degree_centrality", "acos_mean_weights", 
             "euclidian_mean_weights", "euclidian_load_centrality", "acos_load_centrality"],
         "similarity": {
-            "numerical_selection": ["size", "price_value", "floor", "room", "year", "rent_value", 
-                "credit_value"],
-            "categorical_selection": ["city", "district", "category", "rent_type", "price_mode", "warehouse"],
+            "numerical_selection": ["size", "room"],
+            "categorical_selection": ["city", "district", "category"],
             "cluster_count": 22,
             "degree_centrality": {
                 "threshold": 0.45
